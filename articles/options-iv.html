@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Implied volatility and the smile · Quant Atlas</title>
+<meta name="description" content="Invert Black-Scholes, build a smile and surface, and read the market-implied distribution.">
+<meta property="og:title" content="Implied volatility and the smile · Quant Atlas">
+<meta property="og:description" content="Invert Black-Scholes, build a smile and surface, and read the market-implied distribution.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1222'/%3E%3Cpath d='M5 24C10 24 11 13 16 13S22 8 27 6' stroke='%23f4b23e' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('qa-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-page="article" data-id="options-iv" data-root="../">
+<div id="site-header"></div>
+<main class="wrap">
+<article id="v-options-iv" class="article">
+  <div class="kick"><span class="tag">Options &amp; Volatility</span><span class="tag">Step 5 of 6</span><span class="tag">9 Oct 2026</span></div>
+  <h1>Implied volatility and the smile</h1>
+  <p class="sub">The market gives prices. Running Black-Scholes backwards turns them into volatilities, and those volatilities are not all the same.</p>
+  <div class="pathnav" data-step="5"></div>
+
+  <h2>The idea</h2>
+  <p>In Black-Scholes every input is observable except volatility. The market, meanwhile, shows the option price. So traders flip the question: which volatility makes the formula match this price? That number is the <b>implied volatility</b>. Because price rises with volatility at every strike, there is exactly one answer, and desks quote options in volatility instead of price.</p>
+  <p>If the model were right, every strike and expiry would give the same number. They do not. Low strikes usually carry higher implied volatility than high ones. Plotted against strike, the points form a <b>skew</b> or a <b>smile</b>. Across strikes and maturities they form a <b>volatility surface</b>.</p>
+
+  <h2>Terms in one breath</h2>
+  <dl class="gloss">
+    <div><dt>Implied volatility</dt><dd>The volatility that makes the model price equal the market price. A quote for the option's price level, not a forecast by itself.</dd></div>
+    <div><dt>Realised volatility</dt><dd>How much the price actually moved over a past period.</dd></div>
+    <div><dt>Skew</dt><dd>Implied volatility falling as the strike rises. Typical for equity indices: downside protection is expensive.</dd></div>
+    <div><dt>Smile</dt><dd>Higher implied volatility on both wings than at the money. Common in currencies.</dd></div>
+    <div><dt>Term structure</dt><dd>Implied volatility at the money against maturity.</dd></div>
+    <div><dt>Volatility surface</dt><dd>Implied volatility as a function of strike and maturity.</dd></div>
+    <div><dt>Newton's method</dt><dd>Root finding by sliding down tangent lines. Here the slope is vega, so it is fast when vega is large and unstable when it is tiny.</dd></div>
+    <div><dt>Bisection</dt><dd>Root finding by halving an interval that contains the answer. Slow but safe.</dd></div>
+    <div><dt>Risk-neutral density</dt><dd>The market's implied distribution of the future price, recovered from option prices across strikes.</dd></div>
+    <div><dt>Butterfly arbitrage</dt><dd>A smile so bumpy that a butterfly spread would have a negative price. The implied density would go below zero.</dd></div>
+  </dl>
+
+  <h2>Lab 10: solve for implied volatility</h2>
+  <div class="lab" data-lab="ivsolve"></div>
+  <p>Try this: pick a market price below the allowed range and the solver reports no answer. Then pick a deep out-of-the-money strike with a very high starting guess and watch Newton struggle where the curve is flat.</p>
+
+  <h2>Why a skew exists</h2>
+  <p>Investors pay up for protection against crashes, and crashes in equities tend to come with volatility spikes. Both push put prices, and so their implied volatilities, above what a lognormal model would give. Skew is also steeper for short maturities, because a crash is a larger part of a short life.</p>
+
+  <h2>Lab 11: build a smile</h2>
+  <p>Shape a smile with four sliders. The 2D lines and the 3D surface show the volatility. The bottom chart converts the same prices into the market's view of the future price.</p>
+  <div class="lab" data-lab="smile"></div>
+  <p>Try this: raise the skew. The orange density grows a heavier left tail than the grey lognormal one. The market is pricing more probability on big falls than a flat volatility allows.</p>
+
+  <details class="deep">
+    <summary>Go deeper: how option prices reveal a distribution</summary>
+    <p>The call price is C(K) = e<sup>−rT</sup> ∫ (s − K)<sup>+</sup> f(s) ds, where f is the risk-neutral density of the price at expiry. Differentiate once with respect to the strike: ∂C/∂K = −e<sup>−rT</sup> × (chance that the price ends above K). Differentiate again and you get</p>
+    <div class="formula">∂²C/∂K² = e<sup>−rT</sup> · f(K)</div>
+    <p>So the second difference of call prices across strikes is the density, which is what the lab computes. Density cannot be negative, so butterfly spreads cannot have a negative price. That is the arbitrage rule a smile must obey. Practitioners fit smooth, arbitrage-free families such as SVI to quotes for exactly this reason.</p>
+  </details>
+
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><a href="https://en.wikipedia.org/wiki/Implied_volatility" target="_blank" rel="noopener">Wikipedia: Implied volatility</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Volatility_smile" target="_blank" rel="noopener">Wikipedia: Volatility smile</a></li>
+    <li><a href="https://www.bis.org/publ/bisp06b.pdf" target="_blank" rel="noopener">Cooper (Bank of England, 1999): estimating risk-neutral densities from option prices</a></li>
+  </ul>
+  <div class="nextrow" data-next="options-mc"></div>
+</article>
+</main>
+<footer class="foot"><p>Quant Atlas. Numbers on these pages are illustrative examples, not market data and not financial advice.</p></footer>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="../assets/registry.js"></script>
+<script src="../assets/site.js"></script>
+<script src="../assets/options-core.js"></script>
+<script src="../assets/labkit.js"></script>
+<script src="../assets/options-labs.js"></script>
+</body>
+</html>

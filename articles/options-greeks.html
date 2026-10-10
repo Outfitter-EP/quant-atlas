@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Greeks: how an option reacts · Quant Atlas</title>
+<meta name="description" content="Delta, gamma, vega, theta and rho in 2D and 3D, plus a P&amp;L explain tool.">
+<meta property="og:title" content="The Greeks: how an option reacts · Quant Atlas">
+<meta property="og:description" content="Delta, gamma, vega, theta and rho in 2D and 3D, plus a P&amp;L explain tool.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1222'/%3E%3Cpath d='M5 24C10 24 11 13 16 13S22 8 27 6' stroke='%23f4b23e' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('qa-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-page="article" data-id="options-greeks" data-root="../">
+<div id="site-header"></div>
+<main class="wrap">
+<article id="v-options-greeks" class="article">
+  <div class="kick"><span class="tag">Options &amp; Volatility</span><span class="tag">Step 4 of 6</span><span class="tag">9 Oct 2026</span></div>
+  <h1>The Greeks: how an option reacts</h1>
+  <p class="sub">Each Greek is the slope of the price against one input. Together they tell you what a position will do tomorrow.</p>
+  <div class="pathnav" data-step="4"></div>
+
+  <h2>The idea</h2>
+  <p>An option price depends on spot, time, volatility and the rate. A trader holding options wants to know how much money is lost or made when each input moves a little. The answers are the Greeks. Banks limit and hedge them every day.</p>
+
+  <h2>Terms in one breath</h2>
+  <dl class="gloss">
+    <div><dt>Delta, Δ</dt><dd>Change in option value for a $1 move in spot. Also the number of shares that hedges one option. A call is between 0 and 1, a put between −1 and 0.</dd></div>
+    <div><dt>Gamma, Γ</dt><dd>Change in delta for a $1 move in spot. High gamma means the hedge goes stale fast. Largest at the money close to expiry.</dd></div>
+    <div><dt>Vega, ν</dt><dd>Change in value for one point of volatility. Long options means long vega: you gain when volatility rises.</dd></div>
+    <div><dt>Theta, Θ</dt><dd>Change in value as one day passes. Long options lose value with time, short options earn it.</dd></div>
+    <div><dt>Rho, ρ</dt><dd>Change in value for a 1% move in the interest rate. Usually the smallest effect for short options.</dd></div>
+    <div><dt>Delta hedge</dt><dd>Trade shares so that total delta is zero. The position is then flat for small moves in spot.</dd></div>
+    <div><dt>P&amp;L explain</dt><dd>Splitting a day's profit into delta, gamma, vega and theta pieces plus what is left over.</dd></div>
+  </dl>
+
+  <h2>The formulas</h2>
+  <div class="formula">
+    Δ<sub>call</sub> = e<sup>−qT</sup>·N(d<sub>1</sub>), &nbsp; Δ<sub>put</sub> = Δ<sub>call</sub> − e<sup>−qT</sup><br>
+    Γ = e<sup>−qT</sup>·φ(d<sub>1</sub>) / (S·σ√T)<br>
+    ν = S·e<sup>−qT</sup>·φ(d<sub>1</sub>)·√T<br>
+    Θ<sub>call</sub> = −S·e<sup>−qT</sup>·φ(d<sub>1</sub>)·σ / (2√T) − r·K·e<sup>−rT</sup>·N(d<sub>2</sub>) + q·S·e<sup>−qT</sup>·N(d<sub>1</sub>)<br>
+    ρ<sub>call</sub> = K·T·e<sup>−rT</sup>·N(d<sub>2</sub>) <small>&nbsp;φ is the bell-curve height</small>
+  </div>
+  <p>The labs show vega per volatility point, theta per calendar day and rho per 1% of rate, the units desks use.</p>
+
+  <h2>Lab 8: explore the Greeks</h2>
+  <p>Choose a Greek, then move spot, time and volatility. The 3D surface shows the whole picture at once.</p>
+  <div class="lab" data-lab="greeks"></div>
+  <p>Try this: pick gamma and look at the time chart. At the money gamma climbs steeply in the last days before expiry. Switch to theta: time decay speeds up for the same reason. Short-dated at-the-money options are the most sensitive and the most dangerous to hold.</p>
+
+  <h2>Lab 9: what moved my option?</h2>
+  <p>After a day of trading, a risk team asks why the position changed value. The answer is the Taylor expansion of the price: delta times the spot move, plus half gamma times the move squared, plus vega times the volatility change, plus theta times the time that passed.</p>
+  <div class="lab" data-lab="taylor"></div>
+  <p>Try this: make the spot move large. The delta-only line misses the curve and the parabola catches most of it. For small moves the error is tiny, which is why hedgers rebalance often.</p>
+
+  <details class="deep">
+    <summary>Go deeper: gamma and theta are two sides of one trade</summary>
+    <p>Put the Greeks into the Black-Scholes equation from step 3 and it reads Θ + ½σ²S²Γ + (r − q)SΔ − rV = 0. For a delta-hedged position the delta and rate terms nearly cancel, leaving Θ ≈ −½σ²S²Γ.</p>
+    <p>The meaning: if you own gamma you pay theta every day, and if you sell gamma you collect it. A long option position that is hedged makes money when the stock moves more than the volatility used to price it, and loses the daily decay when it moves less. The lab's calculation line checks this identity with real numbers.</p>
+  </details>
+
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><a href="https://en.wikipedia.org/wiki/Greeks_(finance)" target="_blank" rel="noopener">Wikipedia: Greeks (finance)</a></li>
+    <li><a href="https://www.macroption.com/black-scholes-formula/" target="_blank" rel="noopener">Macroption: Black-Scholes formulas and Greeks</a></li>
+  </ul>
+  <div class="nextrow" data-next="options-iv"></div>
+</article>
+</main>
+<footer class="foot"><p>Quant Atlas. Numbers on these pages are illustrative examples, not market data and not financial advice.</p></footer>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="../assets/registry.js"></script>
+<script src="../assets/site.js"></script>
+<script src="../assets/options-core.js"></script>
+<script src="../assets/labkit.js"></script>
+<script src="../assets/options-labs.js"></script>
+</body>
+</html>

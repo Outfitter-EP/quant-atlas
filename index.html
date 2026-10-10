@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Quant Atlas</title>
+<meta name="description" content="An interactive knowledge base for quants: plain explanations, 2D and 3D charts and sliders for every topic.">
+<meta property="og:title" content="Quant Atlas">
+<meta property="og:description" content="An interactive knowledge base for quants: plain explanations, 2D and 3D charts and sliders for every topic.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1222'/%3E%3Cpath d='M5 24C10 24 11 13 16 13S22 8 27 6' stroke='%23f4b23e' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('qa-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-page="home" data-root="">
+<div id="site-header"></div>
+<main class="wrap">
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Knowledge base for quants</div>
+      <h1 style="margin-top:12px">Quant <em>Atlas</em></h1>
+      <p class="lead">Every topic comes with a plain definition, a picture and sliders you can move. Change a rate and watch the curve answer.</p>
+      <div class="search"><input id="q" type="search" placeholder="Search topics, e.g. bootstrapping" aria-label="Search articles"></div>
+    </div>
+    <canvas id="hero" aria-label="Rotating wireframe of a forward inflation surface" role="img"></canvas>
+  </div>
+  <h2 class="sect-title">Categories</h2>
+  <div class="cats" id="catGrid"></div>
+  <h2 class="sect-title" id="listTitle">Latest articles</h2>
+  <div class="list" id="homeList"></div>
+  <p class="foot">New questions are filed under the best-fitting category above. If none fits, a new category is added.</p>
+</main>
+<footer class="foot"><p>Quant Atlas. Numbers on these pages are illustrative examples, not market data and not financial advice.</p></footer>
+<script src="assets/registry.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/inflation-core.js"></script>
+<script src="assets/home.js"></script>
+</body>
+</html>

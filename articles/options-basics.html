@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Options from scratch: calls, puts and payoffs · Quant Atlas</title>
+<meta name="description" content="What you buy, what you can lose, and how combinations of options shape the payoff.">
+<meta property="og:title" content="Options from scratch: calls, puts and payoffs · Quant Atlas">
+<meta property="og:description" content="What you buy, what you can lose, and how combinations of options shape the payoff.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1222'/%3E%3Cpath d='M5 24C10 24 11 13 16 13S22 8 27 6' stroke='%23f4b23e' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('qa-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-page="article" data-id="options-basics" data-root="../">
+<div id="site-header"></div>
+<main class="wrap">
+<article id="v-options-basics" class="article">
+  <div class="kick"><span class="tag">Options &amp; Volatility</span><span class="tag">Step 1 of 6</span><span class="tag">9 Oct 2026</span></div>
+  <h1>Options from scratch: calls, puts and payoffs</h1>
+  <p class="sub">What you buy, what you can lose, and how to read a payoff picture. Pricing starts in step 2.</p>
+  <div class="pathnav" data-step="1"></div>
+
+  <h2>The idea</h2>
+  <p>An option is a contract that gives its holder a right and no duty. A <b>call</b> is the right to buy an asset at a fixed price. A <b>put</b> is the right to sell it at a fixed price. The fixed price is the <b>strike</b>. The right ends on the <b>expiry</b> date. You pay the seller a <b>premium</b> today for it.</p>
+  <p>Because the buyer can walk away, the most a buyer can lose is the premium. The seller has the opposite deal: keep the premium, carry the obligation.</p>
+
+  <h2>Terms in one breath</h2>
+  <dl class="gloss">
+    <div><dt>Underlying</dt><dd>The asset the option is about: a share, an index, a currency, a commodity.</dd></div>
+    <div><dt>Spot, S</dt><dd>The price of the underlying today. S<sub>T</sub> is its price at expiry.</dd></div>
+    <div><dt>Strike, K</dt><dd>The agreed price at which you may buy (call) or sell (put).</dd></div>
+    <div><dt>Expiry, T</dt><dd>When the right ends. Time left is measured in years.</dd></div>
+    <div><dt>Premium</dt><dd>The price of the option itself, paid by the buyer.</dd></div>
+    <div><dt>Long / short</dt><dd>Long means you bought the option. Short means you sold (wrote) it.</dd></div>
+    <div><dt>European / American</dt><dd>European options can only be used at expiry. American ones any time before.</dd></div>
+    <div><dt>Payoff</dt><dd>What the option is worth at expiry, before counting the premium.</dd></div>
+    <div><dt>Moneyness</dt><dd>In the money: exercising now would pay. At the money: S ≈ K. Out of the money: it would not.</dd></div>
+    <div><dt>Intrinsic value</dt><dd>What exercising right now would pay. Never negative.</dd></div>
+    <div><dt>Time value</dt><dd>Premium minus intrinsic value. You pay for the chance that things move your way before expiry.</dd></div>
+  </dl>
+
+  <h2>The formulas</h2>
+  <div class="formula">
+    Call payoff = max(S<sub>T</sub> − K, 0)<br>
+    Put payoff = max(K − S<sub>T</sub>, 0)<br>
+    Buyer's profit = payoff − premium<br>
+    Premium = intrinsic value + time value
+  </div>
+
+  <h2>Lab 1: one option</h2>
+  <p>Pick a position and move the strike and premium. Watch the break-even and the shape of the risk.</p>
+  <div class="lab" data-lab="payoff"></div>
+  <p>Try this: switch to a short call. The picture flips. The best case is the premium. The worst case has no limit.</p>
+
+  <h2>Lab 2: combine options</h2>
+  <p>Two or more options on the same asset give payoffs a single option cannot. Each strategy answers a question about what you expect.</p>
+  <div class="lab" data-lab="strat"></div>
+  <dl class="gloss">
+    <div><dt>Straddle</dt><dd>Call and put at one strike. Profits from a big move either way. Loses if the price stays put.</dd></div>
+    <div><dt>Strangle</dt><dd>Same idea with strikes apart. Cheaper, but the move must be bigger.</dd></div>
+    <div><dt>Bull call spread</dt><dd>Buy a call, sell a higher call. Cheaper than the call alone, with profit capped.</dd></div>
+    <div><dt>Bear put spread</dt><dd>The mirror image for a falling market.</dd></div>
+    <div><dt>Butterfly</dt><dd>A bet that the price ends near the middle strike. Small cost, small loss, a narrow peak of profit.</dd></div>
+    <div><dt>Covered call</dt><dd>Own the stock and sell a call. You earn the premium and give up the big upside.</dd></div>
+    <div><dt>Protective put</dt><dd>Own the stock and buy a put. Insurance: a floor under your loss.</dd></div>
+    <div><dt>Risk reversal</dt><dd>Sell a put to pay for a call. Upside exposure at low cost, with a downside obligation.</dd></div>
+  </dl>
+
+  <details class="deep">
+    <summary>Go deeper: an option is a bet on movement</summary>
+    <p>The payoff of a call has a kink at the strike. Below it the buyer loses a fixed amount. Above it the gain keeps growing. Losses are capped, gains are not, so an option always gains from extra movement, whichever way the price moves. This is why the price of an option depends on how much the asset moves (its volatility) and not on which way you think it will go.</p>
+    <p>It is also why the premium is not the average payoff. You cannot simply ask for the expected payoff under your own beliefs, because a trader can copy the option with the stock and cash. The price is the cost of that copy. Step 2 builds it.</p>
+  </details>
+
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><a href="https://en.wikipedia.org/wiki/Option_(finance)" target="_blank" rel="noopener">Wikipedia: Option (finance)</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Option_strategy" target="_blank" rel="noopener">Wikipedia: Option strategy</a></li>
+  </ul>
+  <div class="nextrow" data-next="options-binomial"></div>
+</article>
+</main>
+<footer class="foot"><p>Quant Atlas. Numbers on these pages are illustrative examples, not market data and not financial advice.</p></footer>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="../assets/registry.js"></script>
+<script src="../assets/site.js"></script>
+<script src="../assets/options-core.js"></script>
+<script src="../assets/labkit.js"></script>
+<script src="../assets/options-labs.js"></script>
+</body>
+</html>

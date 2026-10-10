@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pricing by simulation: Monte Carlo · Quant Atlas</title>
+<meta name="description" content="Simulate paths, price Asian and barrier options, and see the 1/√N error shrink.">
+<meta property="og:title" content="Pricing by simulation: Monte Carlo · Quant Atlas">
+<meta property="og:description" content="Simulate paths, price Asian and barrier options, and see the 1/√N error shrink.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1222'/%3E%3Cpath d='M5 24C10 24 11 13 16 13S22 8 27 6' stroke='%23f4b23e' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('qa-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-page="article" data-id="options-mc" data-root="../">
+<div id="site-header"></div>
+<main class="wrap">
+<article id="v-options-mc" class="article">
+  <div class="kick"><span class="tag">Options &amp; Volatility</span><span class="tag">Step 6 of 6</span><span class="tag">9 Oct 2026</span></div>
+  <h1>Pricing by simulation: Monte Carlo</h1>
+  <p class="sub">When no formula exists, simulate thousands of possible futures and average the payoff.</p>
+  <div class="pathnav" data-step="6"></div>
+
+  <h2>The idea</h2>
+  <p>Step 3 showed that the price is a discounted average of the payoff. A formula computes that average exactly for simple options. For options whose payoff depends on the whole path, such as one on the average price or one that dies if a barrier is touched, there is usually no formula. Then you draw many random price paths, compute the payoff on each, average them and discount.</p>
+
+  <h2>Terms in one breath</h2>
+  <dl class="gloss">
+    <div><dt>Path</dt><dd>One simulated sequence of prices from today to expiry.</dd></div>
+    <div><dt>Path-dependent option</dt><dd>An option whose payoff depends on the route the price took, not only the end point.</dd></div>
+    <div><dt>Asian option</dt><dd>Pays on the average price over the life. Less sensitive to a last-minute spike.</dd></div>
+    <div><dt>Barrier option</dt><dd>Switches on or off if the price touches a level. An up-and-out call dies if the price reaches the barrier.</dd></div>
+    <div><dt>Standard error</dt><dd>The typical size of the sampling error in the average. It shrinks with the square root of the number of paths.</dd></div>
+    <div><dt>Antithetic variates</dt><dd>For every random draw, also use its mirror image. The pair's errors partly cancel.</dd></div>
+    <div><dt>Seed</dt><dd>The starting number of the random generator. Same seed, same paths, so results can be repeated.</dd></div>
+  </dl>
+
+  <h2>The formulas</h2>
+  <div class="formula">
+    S<sub>t+Δt</sub> = S<sub>t</sub> · exp[ (r − q − σ²/2)·Δt + σ·√Δt · Z ] &nbsp;<small>Z is a standard normal draw</small><br>
+    Price ≈ e<sup>−rT</sup> · (1/N) · Σ payoff<sub>i</sub><br>
+    Standard error = (spread of the payoffs) / √N
+  </div>
+
+  <h2>The steps</h2>
+  <ol class="moves">
+    <li><b>Draw random numbers.</b><p>Bell-curve draws, one per time step per path.</p></li>
+    <li><b>Build each path.</b><p>Apply the formula above step by step, with the rate r so that the stock grows at the risk-free rate on average.</p></li>
+    <li><b>Compute the payoff.</b><p>On each path, using whatever rule the option has.</p></li>
+    <li><b>Average and discount.</b><p>The mean payoff times e<sup>−rT</sup> is the price estimate.</p></li>
+    <li><b>Report the error.</b><p>Always quote the standard error. An estimate without one is a guess.</p></li>
+  </ol>
+
+  <h2>Lab 12: paths and convergence</h2>
+  <p>Start with the European call, where Black-Scholes gives the right answer to compare with. Then switch to the Asian and barrier payoffs, where there is no such check.</p>
+  <div class="lab" data-lab="mc"></div>
+  <p>Try this: increase the number of paths by ten times. The error band narrows by only about three times, the square root of ten. Halving the error costs four times the work. Antithetic draws give a free improvement.</p>
+
+  <details class="deep">
+    <summary>Go deeper: why 1/√N and what helps</summary>
+    <p>The average of N independent payoffs has a standard deviation equal to the payoff's spread divided by √N. That rule comes from the central limit theorem and does not depend on how many random inputs the problem has, which is why Monte Carlo is the method of choice for high-dimensional problems where tree and grid methods become too large.</p>
+    <p>To get more accuracy per path you reduce the spread. Antithetic variates pair each draw with its mirror. A control variate subtracts a related quantity with a known price, for example pricing an Asian option while correcting with the European option. Quasi-random sequences replace random draws with evenly spread points. American options need extra machinery such as the Longstaff-Schwartz regression, because the decision to exercise early depends on information that a single path does not contain.</p>
+  </details>
+
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><a href="https://en.wikipedia.org/wiki/Monte_Carlo_methods_in_finance" target="_blank" rel="noopener">Wikipedia: Monte Carlo methods in finance</a></li>
+    <li><a href="https://www.mathworks.com/help/fininst/pricing-asian-options.html" target="_blank" rel="noopener">MathWorks: Pricing Asian options</a></li>
+  </ul>
+  <div class="formula" style="margin-top:28px">That completes the options path. Next topics to add here: local volatility, stochastic volatility (Heston), calibrating a surface, and American options by regression.</div>
+</article>
+</main>
+<footer class="foot"><p>Quant Atlas. Numbers on these pages are illustrative examples, not market data and not financial advice.</p></footer>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="../assets/registry.js"></script>
+<script src="../assets/site.js"></script>
+<script src="../assets/options-core.js"></script>
+<script src="../assets/labkit.js"></script>
+<script src="../assets/options-labs.js"></script>
+</body>
+</html>

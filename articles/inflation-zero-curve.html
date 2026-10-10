@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>How an inflation zero curve is bootstrapped · Quant Atlas</title>
+<meta name="description" content="Turn zero-coupon inflation swap quotes into a CPI curve, with sliders, a 3D forward surface and a trade inspector.">
+<meta property="og:title" content="How an inflation zero curve is bootstrapped · Quant Atlas">
+<meta property="og:description" content="Turn zero-coupon inflation swap quotes into a CPI curve, with sliders, a 3D forward surface and a trade inspector.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1222'/%3E%3Cpath d='M5 24C10 24 11 13 16 13S22 8 27 6' stroke='%23f4b23e' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('qa-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-page="article" data-id="inflation-zero-curve" data-root="../">
+<div id="site-header"></div>
+<main class="wrap">
+<article id="v-inflation-zero-curve" class="article">
+  <div class="kick"><span class="tag">Inflation</span><span class="tag">Rates &amp; Curves</span><span class="tag">8 Oct 2026</span></div>
+  <h1>How an inflation zero curve is bootstrapped</h1>
+  <p class="sub">From swap quotes to a CPI curve. Every chart below reacts to the sliders. All numbers are illustrative, not live market data.</p>
+
+  <h2>The idea</h2>
+  <p>Traders quote zero-coupon inflation swaps (ZCIS) for 1, 2, 3 ... 30 years. Each quote <span class="mono">b<sub>T</sub></span> is a promise: CPI will grow by <span class="mono">b<sub>T</sub></span> per year, compounded, over <span class="mono">T</span> years. Turn each quote into a CPI level, put the levels in a row, and you have the inflation curve. The zero rates, forwards and monthly values are all read off that row.</p>
+  <div class="formula">
+    I(T) = I<sub>0</sub> × (1 + b<sub>T</sub>)<sup>T</sup> <small>&nbsp;CPI level at T</small><br>
+    z(T) = ( I(T) / I<sub>0</sub> )<sup>1/T</sup> − 1 &nbsp;= b<sub>T</sub> <small>&nbsp;zero inflation rate</small><br>
+    f(T<sub>1</sub>,T<sub>2</sub>) = ( I(T<sub>2</sub>) / I(T<sub>1</sub>) )<sup>1/(T<sub>2</sub>−T<sub>1</sub>)</sup> − 1 <small>&nbsp;forward inflation</small>
+  </div>
+  <p>It is called bootstrapping because you build outward from the short end and each new point uses only points you already have. With ZCIS each step is a one-line formula. With year-on-year swaps each step needs a solve, shown at the end.</p>
+
+  <h2>Terms in one breath</h2>
+  <dl class="gloss">
+    <div><dt>CPI</dt><dd>The consumer price index. One number that tracks the price level, published monthly.</dd></div>
+    <div><dt>Base CPI, I<sub>0</sub></dt><dd>The CPI level the swaps start from. It is the latest known fixing, shifted by the lag.</dd></div>
+    <div><dt>Lag</dt><dd>Swaps pay on CPI from a few months earlier, typically 3 (US, EUR) or 2 (UK RPI). So the curve sits on a "reference CPI" timeline, not on payment dates.</dd></div>
+    <div><dt>ZCIS</dt><dd>A swap with one payment at maturity. One side pays total CPI growth, the other pays (1+b)<sup>T</sup>−1.</dd></div>
+    <div><dt>Breakeven b<sub>T</sub></dt><dd>The fixed rate that makes the ZCIS worth zero today. It is the market's average yearly inflation for T years.</dd></div>
+    <div><dt>Zero inflation rate</dt><dd>Average yearly inflation from today to T. For ZCIS it equals the quote.</dd></div>
+    <div><dt>Forward inflation</dt><dd>Inflation expected between two future dates, such as year 5 to year 10 (the "5y5y").</dd></div>
+    <div><dt>Seasonality</dt><dd>Months that are reliably high or low, like energy in winter. It averages to zero over a year.</dd></div>
+    <div><dt>Nominal rate</dt><dd>The ordinary interest rate used to discount money.</dd></div>
+    <div><dt>Real rate</dt><dd>Nominal rate minus inflation: (1+n)/(1+b)−1. What you earn after prices rise.</dd></div>
+  </dl>
+
+  <h2>The moves</h2>
+  <ol class="moves">
+    <li><b>Fix the base.</b><p>Take the latest CPI the swaps reference, after the lag. Call it I<sub>0</sub>.</p></li>
+    <li><b>Read the quotes.</b><p>One breakeven per maturity. Gaps between quoted years are filled by interpolating the rates.</p></li>
+    <li><b>Turn each quote into a CPI level.</b><p>I(T) = I<sub>0</sub>(1+b<sub>T</sub>)<sup>T</sup>. Both legs of a ZCIS pay on the same day, so discounting cancels and the nominal curve is not needed here.</p></li>
+    <li><b>Fill the gaps.</b><p>Between two yearly points, grow CPI at a constant rate (geometric interpolation) to get monthly values.</p></li>
+    <li><b>Add seasonality.</b><p>Lay a 12-month pattern on top. It sums to zero, so the yearly points do not move.</p></li>
+  </ol>
+  <p>Discounting enters afterwards, when you value cash flows or compare with real rates. That is the last chart of the lab.</p>
+
+  <h2>The lab</h2>
+  <div class="note">The six quote sliders drive every chart in the lab. Presets give you a quick regime to compare.</div>
+
+  <div class="lab">
+    <h3>Quotes to zero and forward curve</h3>
+    <div class="presets" id="presets"></div>
+    <div class="sliders" id="qSliders"></div>
+    <div class="readouts" id="ro1"></div>
+    <div id="p1" class="plot" style="height:300px"></div>
+    <p class="hint">Diamonds are the quotes you set. The line through them is the zero curve. Forwards sit above the zero curve when the zero curve is rising.</p>
+  </div>
+
+  <div class="lab">
+    <h3>Bootstrap it year by year</h3>
+    <div class="sl"><label for="step">Built up to year <output id="stepO">10</output></label><input id="step" type="range" min="0" max="30" step="1" value="10"></div>
+    <div class="presets" style="margin-top:10px"><button class="chip" id="play">Play</button></div>
+    <div id="p2" class="plot" style="height:290px"></div>
+    <div class="calc" id="calc2"></div>
+    <p class="hint">Each new point needs only its own quote and the base. The forward for that year is the new CPI divided by the previous CPI.</p>
+  </div>
+
+  <div class="lab">
+    <h3>Seasonality</h3>
+    <div class="sl"><label for="amp">Seasonal strength <output id="ampO">1.0×</output></label><input id="amp" type="range" min="0" max="2" step="0.1" value="1"></div>
+    <div id="p3" class="plot" style="height:280px"></div>
+    <p class="hint">Month-on-month CPI change for the 36 months after the July 2026 base. The smooth steps are the trend from the annual points. The wiggle adds the seasonal pattern. Over any 12 months the extra pieces cancel, so each yearly CPI node stays where the quotes put it.</p>
+  </div>
+
+  <div class="lab">
+    <h3>Forward inflation surface (3D)</h3>
+    <div id="p4" class="plot" style="height:380px"></div>
+    <p class="hint">Height is annualised inflation expected from the start year over the chosen length. The edge where length is 1 is the 1-year forward curve. Drag to rotate, pinch to zoom. Move the quote sliders above and the surface reshapes.</p>
+  </div>
+
+  <div class="lab">
+    <h3>Change the interest rate</h3>
+    <div class="sliders">
+      <div class="sl"><label for="nom">Nominal level <output id="nomO">3.5%</output></label><input id="nom" type="range" min="0.5" max="7" step="0.1" value="3.5"></div>
+      <div class="sl"><label for="slope">Slope to 30Y <output id="slopeO">+0.5%</output></label><input id="slope" type="range" min="-2" max="2" step="0.1" value="0.5"></div>
+    </div>
+    <div id="p5" class="plot" style="height:300px"></div>
+    <div class="calc" id="calc5"></div>
+    <p class="hint">The CPI curve and the breakeven line do not move. Real rates move one for one with nominal rates. The dashed year-on-year swap rate moves slightly because discounting changes the weights of the yearly forwards.</p>
+  </div>
+
+  <div class="lab">
+    <h3>Trade inspector</h3>
+    <div class="sliders">
+      <div class="sl"><label for="tT">Maturity <output id="tTO">10Y</output></label><input id="tT" type="range" min="1" max="30" step="1" value="10"></div>
+      <div class="sl"><label for="pi">Realised inflation <output id="piO">3.00%</output></label><input id="pi" type="range" min="0" max="8" step="0.05" value="3"></div>
+    </div>
+    <div class="two" id="insp"></div>
+    <p class="hint" style="margin-top:12px">Notional 10,000,000. At inception the two legs have equal expected size, so the swap is worth zero. If inflation averages differently from the quote, the receiver of inflation gains or loses the difference at maturity.</p>
+  </div>
+
+  <h2>Where bootstrapping becomes a real solve</h2>
+  <p>A year-on-year (YoY) swap pays each year's CPI growth against a fixed rate y. Its value depends on discount factors <span class="mono">DF<sub>i</sub></span>, so each new maturity solves for one new forward using the ones already found:</p>
+  <div class="formula">F<sub>n</sub> = ( y<sub>n</sub> Σ<sub>i≤n</sub> DF<sub>i</sub> − Σ<sub>i&lt;n</sub> DF<sub>i</sub>F<sub>i</sub> ) / DF<sub>n</sub> <small>&nbsp;F<sub>i</sub> = I(i)/I(i−1) − 1</small></div>
+  <p>This sketch ignores the convexity adjustment that real YoY pricing adds. In practice desks fit one curve to ZCIS, YoY swaps and inflation-linked bonds together, with seasonality and the published CPI fixings at the front.</p>
+
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><a href="https://www.mathworks.com/help/fininst/inflationbuild.html" target="_blank" rel="noopener">MathWorks: build an inflation curve from ZCIS rates</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Inflation_swap" target="_blank" rel="noopener">Wikipedia: Inflation swap</a></li>
+    <li><a href="https://idd.ice.com/IRHelp/Content/FM/Zero_Coupon_Inflation_Sw.htm" target="_blank" rel="noopener">ICE: Zero coupon inflation swap</a></li>
+  </ul>
+</article>
+</main>
+<footer class="foot"><p>Quant Atlas. Numbers on these pages are illustrative examples, not market data and not financial advice.</p></footer>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="../assets/registry.js"></script>
+<script src="../assets/site.js"></script>
+<script src="../assets/inflation-core.js"></script>
+<script src="../assets/inflation.js"></script>
+</body>
+</html>

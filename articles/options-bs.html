@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Black-Scholes: the formula and what drives it · Quant Atlas</title>
+<meta name="description" content="The closed-form price, the lognormal distribution behind it and a 3D price surface.">
+<meta property="og:title" content="Black-Scholes: the formula and what drives it · Quant Atlas">
+<meta property="og:description" content="The closed-form price, the lognormal distribution behind it and a 3D price surface.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1222'/%3E%3Cpath d='M5 24C10 24 11 13 16 13S22 8 27 6' stroke='%23f4b23e' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('qa-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-page="article" data-id="options-bs" data-root="../">
+<div id="site-header"></div>
+<main class="wrap">
+<article id="v-options-bs" class="article">
+  <div class="kick"><span class="tag">Options &amp; Volatility</span><span class="tag">Step 3 of 6</span><span class="tag">9 Oct 2026</span></div>
+  <h1>Black-Scholes: the formula and what drives it</h1>
+  <p class="sub">Make the tree steps infinitely small and you get one closed formula. Five inputs, one price.</p>
+  <div class="pathnav" data-step="3"></div>
+
+  <h2>The idea</h2>
+  <p>The copying argument from step 2 survives when trading becomes continuous. At every instant, a position of Δ shares against one option has no exposure to small price changes, so it must earn the risk-free rate. That single requirement leads to a formula for the option price.</p>
+  <p>The model also needs a description of how the price moves. It assumes the percentage change each instant is random with a constant size, which makes the price at expiry <b>lognormal</b>: always positive, and skewed to the right.</p>
+
+  <h2>Terms in one breath</h2>
+  <dl class="gloss">
+    <div><dt>Volatility, σ</dt><dd>The yearly size of random price moves, as a percentage. 25% means a typical yearly move of about a quarter.</dd></div>
+    <div><dt>Risk-free rate, r</dt><dd>The interest rate for money with no risk. Used to discount and to grow the cash in the copy.</dd></div>
+    <div><dt>Dividend yield, q</dt><dd>Yearly payout of the underlying as a share of its price. Paying out lowers the stock, so it lowers call prices.</dd></div>
+    <div><dt>Forward price</dt><dd>S·e<sup>(r − q)T</sup>. The price you would agree today to trade at expiry.</dd></div>
+    <div><dt>N(x)</dt><dd>The chance that a standard bell-curve variable is below x. It turns d1 and d2 into probabilities.</dd></div>
+    <div><dt>Lognormal</dt><dd>The log of the price is bell-shaped. Prices stay above zero and the upper tail is longer.</dd></div>
+    <div><dt>Put-call parity</dt><dd>Call − put = S·e<sup>−qT</sup> − K·e<sup>−rT</sup>. It holds for any model with no arbitrage.</dd></div>
+  </dl>
+
+  <h2>The formulas</h2>
+  <div class="formula">
+    d<sub>1</sub> = [ ln(S/K) + (r − q + σ²/2)·T ] / (σ√T) <br>
+    d<sub>2</sub> = d<sub>1</sub> − σ√T<br>
+    Call = S·e<sup>−qT</sup>·N(d<sub>1</sub>) − K·e<sup>−rT</sup>·N(d<sub>2</sub>)<br>
+    Put = K·e<sup>−rT</sup>·N(−d<sub>2</sub>) − S·e<sup>−qT</sup>·N(−d<sub>1</sub>)
+  </div>
+  <p>Read the call formula as a story. The first term is the value today of receiving the asset if the option finishes in the money. The second is the value today of paying the strike in that case. N(d<sub>2</sub>) is the risk-neutral chance of finishing in the money.</p>
+
+  <h2>Lab 5: the price</h2>
+  <div class="lab" data-lab="bsprice"></div>
+  <p>Try this: raise the volatility and watch both the call and the put get dearer. Raise the rate: calls rise, puts fall. Shorten the time: the curve collapses onto the payoff.</p>
+
+  <h2>Lab 6: the distribution behind the price</h2>
+  <p>The price is a discounted average of the payoff over the lognormal distribution. Doing that integral numerically gives the same number as the formula.</p>
+  <div class="lab" data-lab="lognormal"></div>
+
+  <h2>Lab 7: the price surface</h2>
+  <div class="lab" data-lab="bs3d"></div>
+
+  <h2>What the model assumes</h2>
+  <dl class="gloss">
+    <div><dt>Constant volatility</dt><dd>Fails: the market charges different volatilities for different strikes. Step 5.</dd></div>
+    <div><dt>Smooth prices</dt><dd>Fails: real prices jump, for example on news or in a crash.</dd></div>
+    <div><dt>Continuous hedging</dt><dd>You can only trade at discrete times, and each trade costs money.</dd></div>
+    <div><dt>Constant rate and dividend</dt><dd>Both change over time. Desks use full curves instead.</dd></div>
+  </dl>
+
+  <details class="deep">
+    <summary>Go deeper: two routes to the formula</summary>
+    <p><b>Route 1, the hedge.</b> Let V(S, t) be the option value. Hold the option and short Δ = ∂V/∂S shares. The random part of the position cancels, so the position must grow at the risk-free rate. This gives the Black-Scholes equation:</p>
+    <div class="formula">∂V/∂t + ½σ²S²·∂²V/∂S² + (r − q)·S·∂V/∂S − r·V = 0</div>
+    <p>It is solved backwards from the known payoff at expiry. Step 4 uses this equation to relate theta and gamma.</p>
+    <p><b>Route 2, the average.</b> Price = e<sup>−rT</sup> × the average of the payoff when the stock grows at the rate r − q on average. With a lognormal price this integral gives N(d<sub>1</sub>) and N(d<sub>2</sub>). Lab 6 does it by brute force. Step 6 does it by simulation.</p>
+  </details>
+
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><a href="https://en.wikipedia.org/wiki/Black%E2%80%93Scholes_model" target="_blank" rel="noopener">Wikipedia: Black-Scholes model</a></li>
+    <li><a href="https://math.nyu.edu/~kohn/derivative.securities/2012/section5.pdf" target="_blank" rel="noopener">NYU Courant: Derivative securities, section 5</a></li>
+    <li><a href="https://www.macroption.com/black-scholes-formula/" target="_blank" rel="noopener">Macroption: Black-Scholes formulas</a></li>
+  </ul>
+  <div class="nextrow" data-next="options-greeks"></div>
+</article>
+</main>
+<footer class="foot"><p>Quant Atlas. Numbers on these pages are illustrative examples, not market data and not financial advice.</p></footer>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="../assets/registry.js"></script>
+<script src="../assets/site.js"></script>
+<script src="../assets/options-core.js"></script>
+<script src="../assets/labkit.js"></script>
+<script src="../assets/options-labs.js"></script>
+</body>
+</html>

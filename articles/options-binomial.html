@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pricing by copying: the binomial tree · Quant Atlas</title>
+<meta name="description" content="Replicate the payoff with stock and cash, then use many steps and see the tree approach Black-Scholes.">
+<meta property="og:title" content="Pricing by copying: the binomial tree · Quant Atlas">
+<meta property="og:description" content="Replicate the payoff with stock and cash, then use many steps and see the tree approach Black-Scholes.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1222'/%3E%3Cpath d='M5 24C10 24 11 13 16 13S22 8 27 6' stroke='%23f4b23e' stroke-width='2.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('qa-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-page="article" data-id="options-binomial" data-root="../">
+<div id="site-header"></div>
+<main class="wrap">
+<article id="v-options-binomial" class="article">
+  <div class="kick"><span class="tag">Options &amp; Volatility</span><span class="tag">Step 2 of 6</span><span class="tag">9 Oct 2026</span></div>
+  <h1>Pricing by copying: the binomial tree</h1>
+  <p class="sub">An option costs what it costs to build the same payoff from stock and cash. The tree shows how, one step at a time.</p>
+  <div class="pathnav" data-step="2"></div>
+
+  <h2>The idea</h2>
+  <p>A stock is 100 today. In a year it is either 120 or 85. A call with strike 100 pays 20 in the first case and 0 in the second. Now build a portfolio of Δ shares plus some cash (or a loan) that pays exactly 20 and 0 in the same two cases. Two cases and two unknowns have one answer.</p>
+  <p>The call must cost what that portfolio costs. If it were cheaper or dearer, you could trade one against the other and lock in a profit with no risk. That is an <b>arbitrage</b>, and prices that allow one do not last.</p>
+
+  <h2>Terms in one breath</h2>
+  <dl class="gloss">
+    <div><dt>Arbitrage</dt><dd>A trade with no risk of loss and a chance of gain. Pricing assumes none exists.</dd></div>
+    <div><dt>Replicating portfolio</dt><dd>Stock plus cash that pays the same as the option in every future state.</dd></div>
+    <div><dt>Hedge ratio, Δ</dt><dd>How many shares copy one option. Also how many shares you need to cancel the option's risk.</dd></div>
+    <div><dt>Up and down factors, u and d</dt><dd>The price is multiplied by u if it rises and by d if it falls over one step.</dd></div>
+    <div><dt>Risk-neutral probability, q</dt><dd>A weighting of up and down chosen so that the stock grows at the risk-free rate on average. A pricing tool, not a forecast.</dd></div>
+    <div><dt>Backward induction</dt><dd>Start at expiry, where payoffs are known, and step back one level at a time to today.</dd></div>
+    <div><dt>Recombining tree</dt><dd>An up move then a down move lands on the same price as down then up, so the tree stays small.</dd></div>
+    <div><dt>Early exercise</dt><dd>Using an American option before expiry. At each node you keep the larger of waiting or exercising.</dd></div>
+  </dl>
+
+  <h2>The formulas</h2>
+  <div class="formula">
+    Δ = (V<sub>u</sub> − V<sub>d</sub>) / (S(u − d)) <small>&nbsp;shares in the copy</small><br>
+    B = e<sup>−rT</sup>(u·V<sub>d</sub> − d·V<sub>u</sub>) / (u − d) <small>&nbsp;cash in the copy</small><br>
+    Price = Δ·S + B<br>
+    q = (e<sup>rT</sup> − d) / (u − d), &nbsp; Price = e<sup>−rT</sup>[q·V<sub>u</sub> + (1 − q)·V<sub>d</sub>]<br>
+    Many steps: u = e<sup>σ√Δt</sup>, d = 1/u
+  </div>
+
+  <h2>The steps</h2>
+  <ol class="moves">
+    <li><b>Write the two future prices.</b><p>S·u and S·d.</p></li>
+    <li><b>Write the option payoff in each.</b><p>V<sub>u</sub> and V<sub>d</sub>, for example max(S·u − K, 0).</p></li>
+    <li><b>Solve for the copy.</b><p>Δ shares and B in cash must match both payoffs. Two equations, two unknowns.</p></li>
+    <li><b>Read the price.</b><p>The option costs Δ·S + B. The same number comes out of discounting with q.</p></li>
+    <li><b>Repeat backwards.</b><p>With many steps, do this at every node, from expiry back to today.</p></li>
+  </ol>
+
+  <h2>Lab 3: one step</h2>
+  <div class="lab" data-lab="tree1"></div>
+  <p>Try this: move your hedge away from Δ*. One bar goes positive and the other negative. You are exposed again. At Δ* both bars are zero whatever the stock does, so no opinion about up or down is needed to price the option.</p>
+
+  <h2>Lab 4: many steps</h2>
+  <p>Cut the year into more and smaller steps. The tree gets closer to a smooth, continuous model. The limit is the Black-Scholes price, the subject of step 3.</p>
+  <div class="lab" data-lab="tree2"></div>
+  <p>American options add one rule. At every node compare the value of waiting with the value of exercising now and keep the larger. Switch the lab to a put and then to American: the early-exercise premium appears, because the strike received today can earn interest. A call on a stock with no dividends is never exercised early, so American and European calls cost the same.</p>
+
+  <details class="deep">
+    <summary>Go deeper: why the real-world probability drops out</summary>
+    <p>The price of the copy does not depend on how likely you think an up move is. The stock price today already reflects what investors expect and what they demand for bearing risk. Given that price, the two future prices pin down Δ and B without any probability.</p>
+    <p>The number q is what you get when you ask for the weights at which the stock earns exactly the risk-free rate on average: q·u·S + (1 − q)·d·S = e<sup>rΔt</sup>·S. Using q, the option price is a plain discounted average. That is convenient, but q is not a forecast. In the real world the stock may well earn more than the risk-free rate. Pricing by q is a shortcut for pricing by copying, and both give the same number.</p>
+  </details>
+
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><a href="https://en.wikipedia.org/wiki/Binomial_options_pricing_model" target="_blank" rel="noopener">Wikipedia: Binomial options pricing model</a></li>
+    <li><a href="https://metricgate.com/docs/binomial-option-pricing" target="_blank" rel="noopener">MetricGate: Binomial option pricing</a></li>
+  </ul>
+  <div class="nextrow" data-next="options-bs"></div>
+</article>
+</main>
+<footer class="foot"><p>Quant Atlas. Numbers on these pages are illustrative examples, not market data and not financial advice.</p></footer>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="../assets/registry.js"></script>
+<script src="../assets/site.js"></script>
+<script src="../assets/options-core.js"></script>
+<script src="../assets/labkit.js"></script>
+<script src="../assets/options-labs.js"></script>
+</body>
+</html>
